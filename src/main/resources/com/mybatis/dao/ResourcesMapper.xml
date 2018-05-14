@@ -1,0 +1,477 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mybatis.dao.ResourcesMapper">
+	<resultMap id="BaseResultMap" type="com.mybatis.bean.Resources">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="type" jdbcType="INTEGER" property="type" />
+		<result column="url" jdbcType="VARCHAR" property="url" />
+		<result column="parentId" jdbcType="INTEGER" property="parentid" />
+		<result column="isAvailable" jdbcType="INTEGER" property="isavailable" />
+	</resultMap>
+	<resultMap id="ResourceMap2" type="com.mybatis.bean.Resources">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="name" jdbcType="VARCHAR" property="name" />
+		<result column="type" jdbcType="INTEGER" property="type" />
+		<result column="url" jdbcType="VARCHAR" property="url" />
+		<result column="parentId" jdbcType="INTEGER" property="parentid" />
+		<result column="isAvailable" jdbcType="INTEGER" property="isavailable" />
+		<result column="chirdenCount" jdbcType="INTEGER" property="chirdenCount" />
+	</resultMap>
+	<select id="selectResInfoToRJChange" resultMap="ResourceMap2">
+		<if test="have != null">
+			<if test="have == 1">
+				SELECT ccc.*,COUNT(ddd.`id`) chirdenCount
+				FROM
+				`purchase`.`smbms_role` aaa
+				INNER JOIN
+				`purchase`.`smbms_role_jurisdiction` bbb ON aaa.`id` =
+				bbb.`roleId`
+				INNER JOIN `purchase`.`smbms_resources` ccc ON bbb.`resId` =
+				ccc.`id`
+				LEFT JOIN `smbms_resources` ddd ON ccc.`id` = ddd.`parentId`
+				<trim prefix="WHERE" prefixOverrides="AND||OR" suffixOverrides=",">
+					<if test="roleId != null">
+						aaa.`id` = #{roleId}
+					</if>
+					<if test="rjAvailable != null">
+						and bbb.`isAvailable` = #{rjAvailable}
+					</if>
+					<if test="info != null">
+						<if test="info.id != null">
+							and ccc.id = #{info.id}
+						</if>
+						<if test="info.name != null and info.name != ''">
+							and ccc.name LIKE #{info.name}
+						</if>
+						<if test="info.type != null and (info.type ==1 or info.type == 2)">
+							and ccc.type = #{info.type}
+						</if>
+						<if test="info.url != null and info.url != ''">
+							and ccc.url LIKE #{info.url}
+						</if>
+						<if test="info.parentid != null">
+							and ccc.parentId = #{info.parentid}
+						</if>
+						<if
+							test="info.isavailable != null and (info.isavailable ==1 or info.isavailable == 0)">
+							and ccc.isAvailable = #{info.isavailable}
+						</if>
+					</if>
+				</trim>
+				GROUP BY ccc.id
+			</if>
+			<if test="have == 2">
+				SELECT res.*,COUNT(res2.`id`) chirdenCount FROM
+				`purchase`.`smbms_resources` res
+				LEFT JOIN `smbms_resources` res2 ON
+				res.`id` = res2.`parentId`
+				<trim prefix="WHERE" prefixOverrides="AND||OR" suffixOverrides=",">
+					res.id NOT IN(
+					SELECT ccc.id
+					FROM
+					`purchase`.`smbms_role` aaa
+					INNER JOIN
+					`purchase`.`smbms_role_jurisdiction` bbb ON aaa.`id` =
+					bbb.`roleId`
+					INNER JOIN `purchase`.`smbms_resources` ccc ON
+					bbb.`resId` = ccc.`id`
+					<trim prefix="WHERE" prefixOverrides="AND||OR"
+						suffixOverrides=",">
+						<if test="roleId != null">
+							aaa.`id` = #{roleId}
+						</if>
+						<if test="rjAvailable != null">
+							and bbb.`isAvailable` = #{rjAvailable}
+						</if>
+					</trim>
+					)
+					<if test="info.id != null">
+						and res.id = #{info.id}
+					</if>
+					<if test="info.name != null and info.name != ''">
+						and res.name LIKE #{info.name}
+					</if>
+					<if test="info.type != null and (info.type ==1 or info.type == 2)">
+						and res.type = #{info.type}
+					</if>
+					<if test="info.url != null and info.url != ''">
+						and res.url LIKE #{info.url}
+					</if>
+					<if test="info.parentid != null">
+						and res.parentId = #{info.parentid}
+					</if>
+					<if
+						test="info.isavailable != null and (info.isavailable ==1 or info.isavailable == 0)">
+						and res.isAvailable = #{info.isavailable}
+					</if>
+				</trim>
+				GROUP BY res.id
+			</if>
+		</if>
+	</select>
+	<select id="selectResourceInfoAndChirdenCount" parameterType="Resources"
+		resultMap="ResourceMap2">
+		SELECT
+		aaa.*,COUNT(bbb.`id`) chirdenCount
+		FROM
+		`smbms_resources` aaa
+		LEFT
+		JOIN `smbms_resources` bbb ON aaa.`id` = bbb.`parentId`
+		<trim prefix="WHERE" prefixOverrides="AND||OR" suffixOverrides=",">
+			<if test="info != null">
+				<if test="info.id != null">
+					aaa.id = #{info.id}
+				</if>
+				<if test="info.name != null and info.name != ''">
+					and aaa.name LIKE #{info.name}
+				</if>
+				<if test="info.type != null and (info.type ==1 or info.type == 2)">
+					and aaa.type = #{info.type}
+				</if>
+				<if test="info.url != null and info.url != ''">
+					and aaa.url LIKE #{info.url}
+				</if>
+				<if test="info.parentid != null">
+					and aaa.parentId = #{info.parentid}
+				</if>
+				<if
+					test="info.isavailable != null and (info.isavailable ==1 or info.isavailable == 0)">
+					and aaa.isAvailable = #{info.isavailable}
+				</if>
+			</if>
+		</trim>
+		GROUP BY aaa.id
+
+	</select>
+	<select id="selectResourceInfo" parameterType="Resources"
+		resultMap="BaseResultMap">
+		SELECT * FROM smbms_resources
+		<trim prefix="WHERE" prefixOverrides="AND||OR" suffixOverrides=",">
+			<if test="info != null">
+				<if test="info.id != null">
+					id = #{info.id}
+				</if>
+				<if test="info.name != null and info.name != ''">
+					and name LIKE #{info.name}
+				</if>
+				<if test="info.type != null and (info.type ==1 or info.type == 2)">
+					and type = #{info.type}
+				</if>
+				<if test="info.url != null and info.url != ''">
+					and url LIKE #{info.url}
+				</if>
+				<if test="info.parentid != null">
+					and parentId = #{info.parentid}
+				</if>
+				<if
+					test="info.isavailable != null and (info.isavailable ==1 or info.isavailable == 0)">
+					and isAvailable = #{info.isavailable}
+				</if>
+			</if>
+		</trim>
+	</select>
+	<select id="selectResourceMenuInfo" parameterType="java.lang.Integer"
+		resultMap="BaseResultMap">
+		SELECT aaa.*
+		FROM
+		`purchase`.`smbms_resources` aaa
+		INNER JOIN
+		`purchase`.`smbms_role_jurisdiction` bbb ON bbb.`resId` = aaa.`id`
+		WHERE bbb.`roleId` = #{info}
+		AND bbb.`isAvailable` = 1
+		AND
+		aaa.`isAvailable` = 1
+		AND aaa.`parentId` NOT IN (-1)
+		ORDER BY
+		aaa.`parentId`,aaa.`id`
+	</select>
+	<select id="selectResourceIdByParentId" parameterType="Resources"
+		resultMap="BaseResultMap">
+		SELECT id FROM smbms_resources
+		<trim prefix="WHERE" prefixOverrides="AND||OR" suffixOverrides=",">
+			<if test="info != null">
+				<if test="info.parentid != null">
+					parentId = #{info.parentid}
+				</if>
+			</if>
+		</trim>
+	</select>
+	<select id="selectResourceInfoEqual" parameterType="Resources"
+		resultMap="BaseResultMap">
+		SELECT * FROM smbms_resources
+		<trim prefix="WHERE" prefixOverrides="AND||OR" suffixOverrides=",">
+			<if test="info != null">
+				<if test="info.id != null">
+					id = #{info.id}
+				</if>
+				<if test="info.name != null and info.name != ''">
+					and name = #{info.name}
+				</if>
+				<if test="info.type != null and (info.type ==1 or info.type == 2)">
+					and type = #{info.type}
+				</if>
+				<if test="info.url != null and info.url != ''">
+					and url = #{info.url}
+				</if>
+				<if test="info.parentid != null">
+					and parentId = #{info.parentid}
+				</if>
+				<if
+					test="info.isavailable != null and (info.isavailable ==1 or info.isavailable == 0)">
+					and isAvailable = #{info.isavailable}
+				</if>
+			</if>
+		</trim>
+	</select>
+	<update id="changeAvailable" parameterType="Resources">
+		<if test="info != null and info.size() > 0">
+			UPDATE smbms_resources
+			SET isAvailable = #{isAvailable}
+			WHERE id IN
+			<foreach collection="info" item="item" open="(" separator=","
+				close=")" index="index">
+				#{item.id}
+			</foreach>
+		</if>
+	</update>
+
+	<sql id="Example_Where_Clause">
+		<where>
+			<foreach collection="oredCriteria" item="criteria" separator="or">
+				<if test="criteria.valid">
+					<trim prefix="(" prefixOverrides="and" suffix=")">
+						<foreach collection="criteria.criteria" item="criterion">
+							<choose>
+								<when test="criterion.noValue">
+									and ${criterion.condition}
+								</when>
+								<when test="criterion.singleValue">
+									and ${criterion.condition} #{criterion.value}
+								</when>
+								<when test="criterion.betweenValue">
+									and ${criterion.condition} #{criterion.value}
+									and
+									#{criterion.secondValue}
+								</when>
+								<when test="criterion.listValue">
+									and ${criterion.condition}
+									<foreach close=")" collection="criterion.value" item="listItem"
+										open="(" separator=",">
+										#{listItem}
+									</foreach>
+								</when>
+							</choose>
+						</foreach>
+					</trim>
+				</if>
+			</foreach>
+		</where>
+	</sql>
+	<sql id="Update_By_Example_Where_Clause">
+		<where>
+			<foreach collection="example.oredCriteria" item="criteria"
+				separator="or">
+				<if test="criteria.valid">
+					<trim prefix="(" prefixOverrides="and" suffix=")">
+						<foreach collection="criteria.criteria" item="criterion">
+							<choose>
+								<when test="criterion.noValue">
+									and ${criterion.condition}
+								</when>
+								<when test="criterion.singleValue">
+									and ${criterion.condition} #{criterion.value}
+								</when>
+								<when test="criterion.betweenValue">
+									and ${criterion.condition} #{criterion.value}
+									and
+									#{criterion.secondValue}
+								</when>
+								<when test="criterion.listValue">
+									and ${criterion.condition}
+									<foreach close=")" collection="criterion.value" item="listItem"
+										open="(" separator=",">
+										#{listItem}
+									</foreach>
+								</when>
+							</choose>
+						</foreach>
+					</trim>
+				</if>
+			</foreach>
+		</where>
+	</sql>
+	<sql id="Base_Column_List">
+		id, name, type, url, parentId, isAvailable
+	</sql>
+	<select id="selectByExample" parameterType="com.mybatis.bean.ResourcesExample"
+		resultMap="BaseResultMap">
+		select
+		<if test="distinct">
+			distinct
+		</if>
+		<include refid="Base_Column_List" />
+		from smbms_resources
+		<if test="_parameter != null">
+			<include refid="Example_Where_Clause" />
+		</if>
+		<if test="orderByClause != null">
+			order by ${orderByClause}
+		</if>
+	</select>
+	<select id="selectByPrimaryKey" parameterType="java.lang.Integer"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from smbms_resources
+		where id = #{id,jdbcType=BIGINT}
+	</select>
+	<delete id="deleteByPrimaryKey" parameterType="java.lang.Long">
+		delete from
+		smbms_resources
+		where id = #{id,jdbcType=BIGINT}
+	</delete>
+	<delete id="deleteByExample" parameterType="com.mybatis.bean.ResourcesExample">
+		delete from smbms_resources
+		<if test="_parameter != null">
+			<include refid="Example_Where_Clause" />
+		</if>
+	</delete>
+	<insert id="insert" parameterType="com.mybatis.bean.Resources">
+		insert into smbms_resources
+		(id, name, type,
+		url, parentId, isAvailable
+		)
+		values
+		(#{id,jdbcType=BIGINT}, #{name,jdbcType=VARCHAR},
+		#{type,jdbcType=INTEGER},
+		#{url,jdbcType=VARCHAR},
+		#{parentid,jdbcType=INTEGER}, #{isavailable,jdbcType=INTEGER}
+		)
+	</insert>
+	<insert id="insertSelective" parameterType="com.mybatis.bean.Resources">
+		insert into smbms_resources
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="name != null">
+				name,
+			</if>
+			<if test="type != null">
+				type,
+			</if>
+			<if test="url != null">
+				url,
+			</if>
+			<if test="parentid != null">
+				parentId,
+			</if>
+			<if test="isavailable != null">
+				isAvailable,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=BIGINT},
+			</if>
+			<if test="name != null">
+				#{name,jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				#{type,jdbcType=INTEGER},
+			</if>
+			<if test="url != null">
+				#{url,jdbcType=VARCHAR},
+			</if>
+			<if test="parentid != null">
+				#{parentid,jdbcType=INTEGER},
+			</if>
+			<if test="isavailable != null">
+				#{isavailable,jdbcType=INTEGER},
+			</if>
+		</trim>
+	</insert>
+	<select id="countByExample" parameterType="com.mybatis.bean.ResourcesExample"
+		resultType="java.lang.Long">
+		select count(*) from smbms_resources
+		<if test="_parameter != null">
+			<include refid="Example_Where_Clause" />
+		</if>
+	</select>
+	<update id="updateByExampleSelective" parameterType="map">
+		update smbms_resources
+		<set>
+			<if test="record.id != null">
+				id = #{record.id,jdbcType=BIGINT},
+			</if>
+			<if test="record.name != null">
+				name = #{record.name,jdbcType=VARCHAR},
+			</if>
+			<if test="record.type != null">
+				type = #{record.type,jdbcType=INTEGER},
+			</if>
+			<if test="record.url != null">
+				url = #{record.url,jdbcType=VARCHAR},
+			</if>
+			<if test="record.parentid != null">
+				parentId = #{record.parentid,jdbcType=INTEGER},
+			</if>
+			<if test="record.isavailable != null">
+				isAvailable = #{record.isavailable,jdbcType=INTEGER},
+			</if>
+		</set>
+		<if test="_parameter != null">
+			<include refid="Update_By_Example_Where_Clause" />
+		</if>
+	</update>
+	<update id="updateByExample" parameterType="map">
+		update smbms_resources
+		set id = #{record.id,jdbcType=BIGINT},
+		name =
+		#{record.name,jdbcType=VARCHAR},
+		type =
+		#{record.type,jdbcType=INTEGER},
+		url = #{record.url,jdbcType=VARCHAR},
+		parentId = #{record.parentid,jdbcType=INTEGER},
+		isAvailable =
+		#{record.isavailable,jdbcType=INTEGER}
+		<if test="_parameter != null">
+			<include refid="Update_By_Example_Where_Clause" />
+		</if>
+	</update>
+	<update id="updateByPrimaryKeySelective" parameterType="com.mybatis.bean.Resources">
+		update smbms_resources
+		<set>
+			<if test="name != null">
+				name = #{name,jdbcType=VARCHAR},
+			</if>
+			<if test="type != null">
+				type = #{type,jdbcType=INTEGER},
+			</if>
+			<if test="url != null">
+				url = #{url,jdbcType=VARCHAR},
+			</if>
+			<if test="parentid != null">
+				parentId = #{parentid,jdbcType=INTEGER},
+			</if>
+			<if test="isavailable != null">
+				isAvailable = #{isavailable,jdbcType=INTEGER},
+			</if>
+		</set>
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+	<update id="updateByPrimaryKey" parameterType="com.mybatis.bean.Resources">
+		update
+		smbms_resources
+		set name = #{name,jdbcType=VARCHAR},
+		type =
+		#{type,jdbcType=INTEGER},
+		url = #{url,jdbcType=VARCHAR},
+		parentId =
+		#{parentid,jdbcType=INTEGER},
+		isAvailable =
+		#{isavailable,jdbcType=INTEGER}
+		where id = #{id,jdbcType=BIGINT}
+	</update>
+</mapper>

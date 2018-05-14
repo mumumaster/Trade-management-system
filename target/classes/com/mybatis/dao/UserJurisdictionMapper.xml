@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mybatis.dao.UserJurisdictionMapper">
+  <resultMap id="BaseResultMap" type="com.mybatis.bean.UserJurisdiction">
+    <id column="id" jdbcType="INTEGER" property="id" />
+    <result column="uId" jdbcType="INTEGER" property="uid" />
+    <result column="roleId" jdbcType="INTEGER" property="roleid" />
+    <result column="isAvailable" jdbcType="INTEGER" property="isavailable" />
+  </resultMap>
+	<select id="selectUserJurisdictionInfo" resultMap="BaseResultMap">
+		<!-- <if test="id != null and id != 0"> -->
+		SELECT * FROM smbms_user_jurisdiction
+		<!-- </if> -->
+	</select>
+	<select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.Long">
+		<if test="id != null and id != 0">
+			SELECT * FROM smbms_user_jurisdiction WHERE uId = #{id}
+		</if>
+	</select>
+  <sql id="Example_Where_Clause">
+    <where>
+      <foreach collection="oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Update_By_Example_Where_Clause">
+    <where>
+      <foreach collection="example.oredCriteria" item="criteria" separator="or">
+        <if test="criteria.valid">
+          <trim prefix="(" prefixOverrides="and" suffix=")">
+            <foreach collection="criteria.criteria" item="criterion">
+              <choose>
+                <when test="criterion.noValue">
+                  and ${criterion.condition}
+                </when>
+                <when test="criterion.singleValue">
+                  and ${criterion.condition} #{criterion.value}
+                </when>
+                <when test="criterion.betweenValue">
+                  and ${criterion.condition} #{criterion.value} and #{criterion.secondValue}
+                </when>
+                <when test="criterion.listValue">
+                  and ${criterion.condition}
+                  <foreach close=")" collection="criterion.value" item="listItem" open="(" separator=",">
+                    #{listItem}
+                  </foreach>
+                </when>
+              </choose>
+            </foreach>
+          </trim>
+        </if>
+      </foreach>
+    </where>
+  </sql>
+  <sql id="Base_Column_List">
+    id, uId, roleId, isAvailable
+  </sql>
+  <select id="selectByExample" parameterType="com.mybatis.bean.UserJurisdictionExample" resultMap="BaseResultMap">
+    select
+    <if test="distinct">
+      distinct
+    </if>
+    <include refid="Base_Column_List" />
+    from smbms_user_jurisdiction
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+    <if test="orderByClause != null">
+      order by ${orderByClause}
+    </if>
+  </select>
+  <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from smbms_user_jurisdiction
+    where id = #{id,jdbcType=INTEGER}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer">
+    delete from smbms_user_jurisdiction
+    where id = #{id,jdbcType=INTEGER}
+  </delete>
+  <delete id="deleteByExample" parameterType="com.mybatis.bean.UserJurisdictionExample">
+    delete from smbms_user_jurisdiction
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.mybatis.bean.UserJurisdiction">
+    insert into smbms_user_jurisdiction (id, uId, roleId, 
+      isAvailable)
+    values (#{id,jdbcType=INTEGER}, #{uid,jdbcType=INTEGER}, #{roleid,jdbcType=INTEGER}, 
+      #{isavailable,jdbcType=INTEGER})
+  </insert>
+  <insert id="insertSelective" parameterType="com.mybatis.bean.UserJurisdiction">
+    insert into smbms_user_jurisdiction
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="uid != null">
+        uId,
+      </if>
+      <if test="roleid != null">
+        roleId,
+      </if>
+      <if test="isavailable != null">
+        isAvailable,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=INTEGER},
+      </if>
+      <if test="uid != null">
+        #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="roleid != null">
+        #{roleid,jdbcType=INTEGER},
+      </if>
+      <if test="isavailable != null">
+        #{isavailable,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  <select id="countByExample" parameterType="com.mybatis.bean.UserJurisdictionExample" resultType="java.lang.Long">
+    select count(*) from smbms_user_jurisdiction
+    <if test="_parameter != null">
+      <include refid="Example_Where_Clause" />
+    </if>
+  </select>
+  <update id="updateByExampleSelective" parameterType="map">
+    update smbms_user_jurisdiction
+    <set>
+      <if test="record.id != null">
+        id = #{record.id,jdbcType=INTEGER},
+      </if>
+      <if test="record.uid != null">
+        uId = #{record.uid,jdbcType=INTEGER},
+      </if>
+      <if test="record.roleid != null">
+        roleId = #{record.roleid,jdbcType=INTEGER},
+      </if>
+      <if test="record.isavailable != null">
+        isAvailable = #{record.isavailable,jdbcType=INTEGER},
+      </if>
+    </set>
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByExample" parameterType="map">
+    update smbms_user_jurisdiction
+    set id = #{record.id,jdbcType=INTEGER},
+      uId = #{record.uid,jdbcType=INTEGER},
+      roleId = #{record.roleid,jdbcType=INTEGER},
+      isAvailable = #{record.isavailable,jdbcType=INTEGER}
+    <if test="_parameter != null">
+      <include refid="Update_By_Example_Where_Clause" />
+    </if>
+  </update>
+  <update id="updateByPrimaryKeySelective" parameterType="com.mybatis.bean.UserJurisdiction">
+    update smbms_user_jurisdiction
+    <set>
+      <if test="uid != null">
+        uId = #{uid,jdbcType=INTEGER},
+      </if>
+      <if test="roleid != null">
+        roleId = #{roleid,jdbcType=INTEGER},
+      </if>
+      <if test="isavailable != null">
+        isAvailable = #{isavailable,jdbcType=INTEGER},
+      </if>
+    </set>
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.mybatis.bean.UserJurisdiction">
+    update smbms_user_jurisdiction
+    set uId = #{uid,jdbcType=INTEGER},
+      roleId = #{roleid,jdbcType=INTEGER},
+      isAvailable = #{isavailable,jdbcType=INTEGER}
+    where id = #{id,jdbcType=INTEGER}
+  </update>
+</mapper>

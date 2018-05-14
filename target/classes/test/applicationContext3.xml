@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 注册属性文件,这是读取加密的配置文件 -->
+<!-- 	<bean id="propertyConfigurer" class="com.mybatis.utils.DecryptPropertyPlaceholderConfigurer">
+		<property name="locations">
+			<list>
+				<value>classpath:dbconfig.properties</value>
+			</list>
+		</property>
+		<property name="ignoreUnresolvablePlaceholders" value="true" />
+	</bean>	
+ -->
+	<!-- 定义C3P0数据源 -->
+	<bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+		destroy-method="close">
+		<property name="driverClass">
+			<value>${jdbc.driver}</value>
+		</property>
+		<property name="jdbcUrl">
+			<value>${jdbc.url}</value>
+		</property>
+		<property name="user">
+			<value>${jdbc.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.password}</value>
+		</property>	
+		
+	</bean>
+
+	<!-- 注册jdbcTemplate -->
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate"
+		abstract="false" lazy-init="false" autowire="default">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+	</bean>
+
+	<!-- 注册sqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+		<!-- 配置需要加载的mapper文件 -->
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:com/mybatis/dao/**/*.xml</value>
+			</list>
+		</property>
+		<!-- 配置别名 -->
+		<property name="typeAliasesPackage" value="com.mybatis.bean" />
+	</bean>
+
+
+	<!-- 配置sqlSession模版 -->
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sqlSessionFactory" />
+	</bean>
+	
+	<!-- 生成dao接口代理对象 -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sqlSessionFactory" />
+		<property name="basePackage" value="com.mybatis.dao" />
+	</bean>
+	
+	<!-- 扫描所有的mapper接口的实现，让这些mapper能够自动注入-->
+	<!-- base-package：指定mapper接口的包名,可以用这个代替上面这个。-->
+	<!-- <mybatis-spring:scan base-package="com.mybatis.dao"/> -->
+	
+	<!-- id为一个service接口的名称,class为service接口的实现类，name和ref为对应的接口dao名称-->
+	<!-- 自动注入bean的命名规范，如果接口名称是单个大写字母开头，则把第一个大写字母变小写-->
+	<!-- 如果当前接口名称的第一个和第二个字符都为大写，则同接口名称相同 -->
+	<!-- <bean id="StudentService" class="com.mybatis.service.student.StudentServiceImpl">
+		<property name="IStudentDao" ref="IStudentDao"/>
+	</bean> -->
+	<!-- 注册service,配置事务bean,使用这个可以使用注解的方式统一配置service -->
+	<!-- service中已经使用了注解，下面的这个扫描器才起作用 -->
+	<context:component-scan base-package="com.mybatis.service" />
+
+	<!-- 注册事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- 事务使用注解，一般不使用 -->
+	<!--  <tx:annotation-driven transaction-manager="transactionManager"/> -->
+	<!-- 注册事务通知,定义事务控制规则 -->
+	<tx:advice id="txadvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<!-- 先配置只读的 -->
+			<tx:method name="select*" propagation="SUPPORTS" read-only="true" />
+			<tx:method name="show*" propagation="SUPPORTS" read-only="true" />
+			<tx:method name="*" propagation="REQUIRED" rollback-for="java.lang.Exception" />
+		</tx:attributes>
+	</tx:advice>
+	<!--AOP配置, 定义一个事务切面 -->
+	<aop:config>
+		<aop:pointcut expression="execution(* com.mybatis.service..*.*(..))" id="trPoint" />
+		<aop:advisor advice-ref="txadvice" pointcut-ref="trPoint" />
+	</aop:config>
+</beans>

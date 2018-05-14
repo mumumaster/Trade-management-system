@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration
+  PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN"
+  "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+	<!-- targetRuntime="MyBatis3Simple":生成简单版的CRUD "MyBatis3":豪华版 -->
+
+	<context id="DB2Tables" targetRuntime="MyBatis3">
+
+		<!-- 是否去除自动生成的注释：true:是 -->
+		<commentGenerator>
+			<property name="suppressAllComments" value="true" />
+		</commentGenerator>
+
+		<!-- jdbcConnection：指定如何连接到目标数据库 -->
+		<jdbcConnection driverClass="com.mysql.jdbc.Driver"
+			connectionURL="jdbc:mysql://localhost:3306/purchase?allowMultiQueries=true"
+			userId="root" password="123456">
+		</jdbcConnection>
+
+		<!--是否强制转换 -->
+		<javaTypeResolver>
+			<property name="forceBigDecimals" value="false" />
+		</javaTypeResolver>
+
+		<!-- javaModelGenerator：指定javaBean的生成策略 targetPackage="test.model"：目标包名 
+			targetProject="\MBGTestProject\src"：目标工程 -->
+		<javaModelGenerator targetPackage="com.mybatis.bean"
+			targetProject=".\src\main\java">
+			<property name="enableSubPackages" value="true" />
+			<property name="trimStrings" value="true" />
+		</javaModelGenerator>
+
+		<!-- sqlMapGenerator：sql映射生成策略： -->
+		<sqlMapGenerator targetPackage="com.mybatis.dao"
+			targetProject=".\src\main\resources">
+			<property name="enableSubPackages" value="true" />
+		</sqlMapGenerator>
+
+		<!-- javaClientGenerator:指定mapper接口所在的位置 -->
+		<javaClientGenerator type="XMLMAPPER"
+			targetPackage="com.mybatis.dao" targetProject=".\src\main\java">
+			<property name="enableSubPackages" value="true" />
+		</javaClientGenerator>
+
+		<!-- 指定要逆向分析哪些表：根据表要创建javaBean -->		<!-- 
+		<table tableName="smbms_user" domainObjectName="User"></table>
+		<table tableName="smbms_role" domainObjectName="Role"></table>
+		<table tableName="smbms_bill" domainObjectName="Bill"></table>
+		<table tableName="smbms_bill_detail" domainObjectName="BillDetail"></table>
+		<table tableName="smbms_product" domainObjectName="Product"></table>
+		<table tableName="smbms_provider" domainObjectName="Provider"></table>
+		<table tableName="smbms_status" domainObjectName="Status"></table> -->
+		<table tableName="smbms_user_jurisdiction" domainObjectName="UserJurisdiction"></table>
+		
+		
+		
+	</context>
+</generatorConfiguration>

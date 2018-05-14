@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd">
+
+	<!-- 这是jdbc密文配置 -->
+<!-- 	<bean id="propertyConfigurer" class="com.mybatis.utils.DecryptPropertyPlaceholderConfigurer">
+		<property name="Locations">
+			<list>
+				<value>classpath:dbconfig.properties</value>
+			</list>
+		</property>
+		<property name="IgnoreUnresolvablePlaceholders" value="true" />
+	</bean> -->
+
+
+	<!-- dataSource 配置 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+		destroy-method="close">
+		<property name="driverClassName">
+			<value>${jdbc.driver}</value>
+		</property>
+		<property name="url">
+			<value>${jdbc.url}</value>
+		</property>
+		<property name="username">
+			<value>${jdbc.username}</value>
+		</property>
+		<property name="password">
+			<value>${jdbc.password}</value>
+		</property>
+
+	</bean>
+
+	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate"
+		abstract="false" lazy-init="false" autowire="default">
+		<property name="dataSource">
+			<ref bean="dataSource" />
+		</property>
+	</bean>
+
+	<!-- 配置sessionFactory -->
+	<bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+		<property name="configLocation" value="classpath:mybatis-config.xml" />
+		<!-- 配置需要加载的mapper文件 -->
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:com/mybatis/dao/**/*.xml</value>
+			</list>
+		</property>
+		<!-- 配置别名 -->
+		<property name="typeAliasesPackage" value="com.mybatis.bean" />
+	</bean>
+
+
+	<!-- 配置sqlSession模版 -->
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg ref="sessionFactory" />
+
+	</bean>
+	<!-- 配置接口dao -->
+	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sessionFactory" />
+		<property name="basePackage" value="com.mybatis.dao" />
+	</bean>
+
+	<!-- 配置事务bean -->
+	<context:component-scan base-package="com.mybatis.service" />
+
+	<!-- 配置事务管理器 -->
+	<bean id="transactionManager"
+		class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- 定义事务控制规则 -->
+	<tx:advice id="txadvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<!-- 先配置只读的 -->
+			<tx:method name="select*" propagation="SUPPORTS" read-only="true" />
+			<tx:method name="show*" propagation="SUPPORTS" read-only="true" />
+			<tx:method name="*" propagation="REQUIRED" rollback-for="java.lang.Exception" />
+		</tx:attributes>
+	</tx:advice>
+	<!-- 定义一个事务切面 -->
+	<aop:config>
+		<aop:pointcut expression="execution(* com.mybatis.service..*.*(..))"
+			id="trPoint" />
+		<aop:advisor advice-ref="txadvice" pointcut-ref="trPoint" />
+	</aop:config>
+</beans>

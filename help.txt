@@ -1,0 +1,49 @@
+
+ User selectByName(@Param("name")String  name);
+ 
+  <!--按姓名查询  -->
+  <select id="selectByName" resultType="com.mybatis.bean.User">
+		select * from smbms_user  
+		<trim prefix="where" prefixOverrides="and | or">
+			<if test="name != null">
+				and userName = #{name}
+			</if>
+		</trim>
+	</select>
+	
+	
+	<![CDATA[  
+			SELECT u.*, r.`roleName`  FROM smbms_user u
+			
+			LEFT JOIN smbms_role r
+			
+			ON  u.`userRole`=r.`id` 
+		]]>
+		
+		<where>
+			<if test="username != null">
+				u.userName like #{username}
+			</if>
+		</where>
+		
+		order by u.id asc
+		
+		
+		
+		 <![CDATA[  
+			SELECT b.*, p.proName  FROM smbms_bill b
+			
+			LEFT JOIN smbms_provider p
+			
+			ON  b.`providerId`=p.`id`
+	]]>
+		
+	<where>
+		<if test="orderid != null">
+			b.orderid like #{orderid}
+		</if>
+	</where>
+		
+	order by b.id asc
+
+

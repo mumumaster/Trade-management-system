@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context 
+		http://www.springframework.org/schema/context/spring-context.xsd
+		http://www.springframework.org/schema/aop 
+		http://www.springframework.org/schema/aop/spring-aop.xsd
+		http://www.springframework.org/schema/tx 
+		http://www.springframework.org/schema/tx/spring-tx.xsd">
+		
+	<!-- 定义数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="com.mysql.jdbc.Driver" />
+		<property name="url" value="jdbc:mysql://127.0.0.1:3306/purchase?useUnicode=true&amp;characterEncoding=utf-8&amp;useSSL=false" />
+		<property name="username" value="root" />
+		<property name="password" value="root" />
+	</bean>
+	
+	
+	<!-- 配置sessionFactory -->
+	<bean id="sessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+	    <property name="configLocation" value="classpath:mybatis-config.xml"/> 
+		<!-- 配置需要加载的mapper文件 -->
+		<property name="mapperLocations">
+			<list>
+				<value>classpath:com/mybatis/dao/**/*.xml</value>
+			</list>
+		</property>
+		<!-- 配置别名 -->
+		<property name="typeAliasesPackage" value="com.mybatis.bean" />
+	</bean>
+	
+	
+	<!-- 配置一个可以执行批量的sqlSession -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg name="sqlSessionFactory" ref="sessionFactory"></constructor-arg>
+		<constructor-arg name="executorType" value="BATCH"></constructor-arg>
+	</bean>
+	
+	<!-- 配置接口dao-->
+	 <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+		<property name="sqlSessionFactoryBeanName" value="sessionFactory" />
+		<property name="basePackage" value="com.mybatis.dao" />
+	</bean> 
+	
+	<!-- 扫描所有的mapper接口的实现，让这些mapper能够自动注入；
+	base-package：指定mapper接口的包名,可以用这个代替上面这个。
+	 -->
+	<!-- <mybatis-spring:scan base-package="com.mybatis.dao"/> -->
+	
+	<!-- 配置事务bean -->	
+	<context:component-scan base-package="com.mybatis.service" />	
+
+	<!-- 配置事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource" />
+	</bean>
+	<!-- 定义事务控制规则 -->
+	<tx:advice id="txadvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<!-- 先配置只读的 -->
+			<tx:method name="select*" propagation="SUPPORTS" read-only="true"/>
+			<tx:method name="show*" propagation="SUPPORTS" read-only="true"/>
+			<tx:method name="*" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+		</tx:attributes>
+	</tx:advice>
+	<!-- 定义一个事务切面 -->
+	<aop:config>
+		<aop:pointcut expression="execution(* com.mybatis.service..*.*(..))" id="trPoint"/>
+		<aop:advisor advice-ref="txadvice" pointcut-ref="trPoint"/>
+	</aop:config>
+</beans>
